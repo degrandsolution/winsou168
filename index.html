@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ផែនការទីផ្សារ WINSOU ១៦៨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Winsou Red & Warm Neutrals -->
+    <!-- Application Structure Plan: ខ្ញុំបានរចនាកម្មវិធីនេះជាផ្ទាំងគ្រប់គ្រង (Dashboard) បែប SPA (Single Page Application) ដែលមានផ្ទាំងរុករក (Tabs) ចំនួន ៤៖ ១) ផ្ទាំងគ្រប់គ្រង (KPIs)៖ ជាទំព័រដើម បង្ហាញទិន្នន័យគោលដៅសំខាន់ៗ (KPIs) ជាលេខ និងក្រាហ្វិច។ ២) គំនិតយុទ្ធនាការ៖ បង្ហាញពីសសរស្តម្ភយុទ្ធនាការស្នូល (Review, New Stock, Giveaways)។ ៣) យុទ្ធសាស្ត្រវីដេអូ៖ បញ្ជីនៃគំនិតវីដេអូទាំងអស់ (ពីទំព័រទី ៥) ជាមួយនឹងមុខងារស្វែងរក (Search) ភ្លាមៗ។ ៤) យុទ្ធសាស្ត្រ Poster៖ បញ្ជីនៃគំនិត Poster ទាំងអស់ (ពីទំព័រទី ៤) ជាមួយនឹងមុខងារស្វែងរក (Search) ភ្លាមៗ។ រចនាសម្ព័ន្ធនេះត្រូវបានជ្រើសរើសព្រោះវាបំប្លែងបញ្ជីវែងៗ (Lists) នៅក្នុង PDF ទៅជាចំណុចប្រទាក់ (Interface) ដែលអាចរុករក និងស្វែងរកបាន ធ្វើឱ្យផែនការងាយស្រួលយល់ និងប្រើប្រាស់ជាងមុន។ -->
+    <!-- Visualization & Content Choices: ១) KPIs (ទំព័រទី ៦) -> គោលដៅ៖ ជូនដំណឹង (Inform) -> វិធីបង្ហាញ៖ កាតស្ថិតិ (HTML/Tailwind) សម្រាប់លេខធំៗ (Followers, Reach) និងក្រាហ្វិច Donut Chart (Chart.js/Canvas) សម្រាប់ការបំបែកទិន្នន័យ "Total Engagements" (Likes, Shares, Comments)។ -> អន្តរកម្ម៖ ដាក់ Mouse លើក្រាហ្វិច (Hover) សម្រាប់ Tooltips។ -> ហេតុផល៖ ក្រាហ្វិចធ្វើឱ្យការបំបែកទិន្នន័យគោលដៅកាន់តែទាក់ទាញភ្នែកជាងបញ្ជីធម្មតា។ ២) គំនិតយុទ្ធនាការ (ទំព័រ ៤ & ៥) -> គោលដៅ៖ រៀបចំ (Organize) -> វិធីបង្ហាញ៖ បញ្ជីជាក្រឡា (Grid) នៃបណ្ណ (Cards) (HTML/Tailwind) សម្រាប់គំនិតវីដេអូ និង Poster នីមួយៗ។ -> អន្តរកម្ម៖ មុខងារស្វែងរក (Search Bar) (JavaScript) ដើម្បីត្រង (Filter) បញ្ជីទាំងពីរភ្លាមៗ។ -> ហេតុផល៖ មុខងារស្វែងរកគឺចាំបាច់ណាស់ ដើម្បីធ្វើឱ្យបញ្ជីវែងៗ (១៥-២០ គំនិត) ងាយស្រួលរុករក និងស្វែងរក (Consumable & Explorable)។ -> បណ្ណាល័យ/វិធីសាស្ត្រ៖ Chart.js (Canvas) និង JavaScript (Vanilla JS) សម្រាប់តក្កវិជ្ជា (Logic)។ -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px; /* Adjusted for mobile responsiveness */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px; /* Larger for desktop/tablet */
+            }
+        }
+        .tab {
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-active {
+            background-color: #EF4444; /* Winsou Red */
+            color: white;
+            border-color: #EF4444;
+        }
+        .tab:not(.tab-active):hover {
+            background-color: #FEE2E2; /* Light Red Hover */
+        }
+        .idea-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .idea-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-neutral-50 min-h-screen text-neutral-800 font-sans" style="font-family: 'Inter', 'Kantumruy Pro', sans-serif;">
+
+    <div class="container mx-auto p-2 md:p-8 max-w-7xl"> <!-- កែសម្រួល p-4 ទៅ p-2 សម្រាប់ Mobile padding -->
+
+        <header class="text-center mb-6">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-red-600 mb-1">ផែនការទីផ្សារ WINSOU ១៦៨</h1> <!-- កែសម្រួលទំហំអក្សរ h1 សម្រាប់ Mobile -->
+            <p class="text-base sm:text-lg text-neutral-600">ផ្ទាំងគ្រប់គ្រងយុទ្ធនាការ (Campaign Dashboard)</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 mb-6 px-1"> <!-- កែសម្រួល padding សម្រាប់ Nav Tabs -->
+            <button id="tab-kpi" class="tab tab-active py-2 px-3 text-sm sm:text-base font-semibold rounded-full border-2 border-transparent"> <!-- កែសម្រួលទំហំអក្សរ Tab -->
+                📊 ផ្ទាំងគ្រប់គ្រង (KPIs)
+            </button>
+            <button id="tab-campaign" class="tab py-2 px-3 text-sm sm:text-base font-semibold rounded-full border-2 border-transparent">
+                💡 គំនិតយុទ្ធនាការ
+            </button>
+            <button id="tab-video" class="tab py-2 px-3 text-sm sm:text-base font-semibold rounded-full border-2 border-transparent">
+                🎬 យុទ្ធសាស្ត្រវីដេអូ
+            </button>
+            <button id="tab-poster" class="tab py-2 px-3 text-sm sm:text-base font-semibold rounded-full border-2 border-transparent">
+                🖼️ យុទ្ធសាស្ត្រ Poster
+            </button>
+        </nav>
+
+        <main>
+            <!-- 1. KPI Content Pane -->
+            <div id="kpi-content" class="content-pane space-y-6">
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg"> <!-- កែសម្រួល Card padding -->
+                    <h2 class="text-xl sm:text-2xl font-bold text-red-600 mb-3">គោលដៅ KPI សំខាន់ៗ (ខែវិច្ឆិកា)</h2>
+                    <p class="text-sm sm:text-base text-neutral-600 mb-5">
+                        នេះគឺជាគោលដៅវាស់វែងលទ្ធផល (KPIs) សម្រាប់យុទ្ធនាការក្នុងខែវិច្ឆិកា។ គោលដៅទាំងនេះផ្តោតលើការបង្កើនចំនួនអ្នកតាមដាន ​កើនឡើងចំនួន(Reach) និងអត្រាការចូលរួម (Engagement) សរុប។
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                        <div class="bg-red-50 p-4 rounded-lg text-center">
+                            <h3 class="text-lg font-semibold text-red-700">Follower Growth</h3>
+                            <p class="text-3xl font-bold text-red-600">+1,000</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg text-center">
+                            <h3 class="text-lg font-semibold text-blue-700">Total Reach / Views</h3>
+                            <p class="text-3xl font-bold text-blue-600">200,000</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg text-center">
+                            <h3 class="text-lg font-semibold text-green-700">Total Engagements</h3>
+                            <p class="text-3xl font-bold text-green-600">8,000+</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-neutral-700 mb-3 text-center">ការបំបែកទិន្នន័យគោលដៅ Engagement (8,000+)</h3>
+                    <div class="chart-container">
+                        <canvas id="kpiChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Campaign Ideas Pane -->
+            <div id="campaign-content" class="content-pane hidden space-y-6">
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl sm:text-2xl font-bold text-red-600 mb-4">សសរស្តម្ភយុទ្ធនាការស្នូល</h2>
+                    <p class="text-sm sm:text-base text-neutral-600 mb-5">
+                        យុទ្ធនាការទាំងមូលត្រូវបានបង្កើតឡើងនៅលើសសរស្តម្ភសំខាន់ៗចំនួនបី នៃផែនការសម្រាប់ខែវិចិ្ឆកានេះ។ គំនិតទាំងនេះគឺជាមូលដ្ឋានគ្រឹះសម្រាប់ជំរុញការចូលរួម និងបង្ហាញពីតម្លៃទំនិញរបស់ WINSOU។
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-md border border-neutral-200 text-center space-y-2">
+                            <span class="text-4xl sm:text-5xl">📦</span>
+                            <h3 class="text-xl font-semibold text-red-600">Product Review</h3>
+                            <p class="text-sm text-neutral-500">ពិនិត្យផលិតផល</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-md border border-neutral-200 text-center space-y-2">
+                            <span class="text-4xl sm:text-5xl">🎯</span>
+                            <h3 class="text-xl font-semibold text-red-600">New Stock</h3>
+                            <p class="text-sm text-neutral-500">ស្តុកថ្មី</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-md border border-neutral-200 text-center space-y-2">
+                            <span class="text-4xl sm:text-5xl">🎁</span>
+                            <h3 class="text-xl font-semibold text-red-600">Giveaways</h3>
+                            <p class="text-sm text-neutral-500">ការផ្តល់ជូន</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Video Strategy Pane -->
+            <div id="video-content" class="content-pane hidden space-y-6">
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl sm:text-2xl font-bold text-red-600 mb-4">យុទ្ធសាស្ត្រវីដេអូ (១៥ គំនិត)</h2>
+                    <p class="text-sm sm:text-base text-neutral-600 mb-5">
+                        តារាងនេះបង្ហាញពីគំនិតមាតិកាវីដេអូទាំងអស់ នៃផែនការ។
+                    </p>
+                    <input type="search" id="video-search" placeholder="ស្វែងរកគំនិតវីដេអូ..." class="w-full p-3 mb-5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <div id="video-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"> <!-- កែសម្រួល md:grid-cols-2 ទៅ sm:grid-cols-2 -->
+                        <!-- Video idea cards will be injected here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Poster Strategy Pane -->
+            <div id="poster-content" class="content-pane hidden space-y-6">
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl sm:text-2xl font-bold text-red-600 mb-4">យុទ្ធសាស្ត្រ Poster (១៩ គំនិត)</h2>
+                    <p class="text-sm sm:text-base text-neutral-600 mb-5">
+                        តារាងនេះបង្ហាញពីគំនិតមាតិកា Poster ទាំងអស់ នៃផែនការ។ 
+                    </p>
+                    <input type="search" id="poster-search" placeholder="ស្វែងរកគំនិត Poster..." class="w-full p-3 mb-5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <div id="poster-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"> <!-- កែសម្រួល md:grid-cols-2 ទៅ sm:grid-cols-2 -->
+                        <!-- Poster idea cards will be injected here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Data from PDF ---
+            const kpiData = {
+                labels: ['ចូលចិត្ត (Likes)', 'ចែករំលែក (Shares)', 'មតិ (Comments)'],
+                data: [500, 500, 500]
+            };
+
+            const videoIdeas = [
+                { id: 1, title: '១. $ Challenge in Winsou', description: 'តើអាចទិញបានទំនិញអ្វីខ្លះនៅវីនសូ (9 items up+)' },
+                { id: 2, title: '២. Review decor room item', description: 'ចង់តុបតែងបន្ទប់ ឬការិយាល័យ អាចរកបានពីទំនិញផ្សារវីនសូ' },
+                { id: 3, title: '៣. Review best seller products (at least 5 items)', description: 'តម្លៃ 1.1$ សម្រាប់អីវ៉ាន់ពេញនិយមនិងលក់ដាច់ច្រើន' },
+                { id: 4, title: '៤. Review arrival product', description: 'អីវ៉ាន់ថ្មីៗទើបចូលស្តុកដូចជា ប្រដាប់ប្រដាក្មេងលេង សម្ភារៈផ្ទះបាយប្លែកៗ' },
+                { id: 5, title: '៥. Promote all Winsou Branch', description: 'ណែនាំពីសាខាទាំងអស់របស់ផ្សារវីនសូ' },
+                { id: 6, title: '៦. Mystery Box Unboxing', description: 'តម្លៃ 10$ ទិញជាកាដូជូនចំពោះមនុស្សជាទីស្រឡាញ់ ក្នុងឱកាសបុណ្យអុំទូក' },
+                { id: 7, title: '៧. Invite your friends to shopping in Winsou', description: 'បង្ហាញពីតម្លៃល្អនៃគ្រប់មុខទំនិញ' },
+                { id: 8, title: '៨. បង្ហាញកាតសិស្ស ទទួលបានការបញ្ចុះតម្លៃ', description: 'ធ្វើរយៈពេល ១ខែពេញ' },
+                { id: 9, title: '៩. Guess the price challenge in Winsou', description: 'បង្ហាញពីទំនិញល្អ និងគុណភាព តម្លៃត្រឹម 1.1$' },
+                { id: 10, title: '១០. Random ពណ៌សម្ភារៈដើម្បីដើរស្វែងរកទិញ', description: 'បង្ហាញពីទំនិញនានា គ្រប់ប្រភេទ គ្រប់តម្លៃ' },
+                { id: 11, title: '១១. តេស្តគុណភាពអីវ៉ាន់ នៅផ្សារវីនសូ', description: 'ដើម្បីបង្ហាញពីគុណភាពពិតប្រាកដណាមួយនៃសម្ភារៈ ពិតជាអាចទុកចិត្តទោះបីតម្លៃ 1.1$ ក៏ដោយ' },
+                { id: 12, title: '១២. ចង់សន្សំលុយលើការទិញទំនិញ មកវីនសូ', description: 'បង្ហាញពីតម្លៃសមរម្យទៅដល់អតិថិជនបានជឿទុកចិត្ត លើគុណភាព និងសេវាកម្មយើង' },
+                { id: 13, title: '១៣. Set items', description: 'បង្ហាញពីឈុតសម្ភារៈ' },
+                { id: 14, title: '១៤. DIY Decor with Winsou', description: 'វីដេអូខ្លីបង្ហាញពីរបៀបតុបតែងបន្ទប់គេង ឬជ្រុងធ្វើការ ដោយប្រើទំនិញ 5 មុខពីវីនសូ' },
+                { id: 15, title: '១៥. របៀបកម្មង់ទំនិញពីវីនសូ តាមអនឡាញ', description: 'បង្ហាញពីភាពងាយស្រួលសម្រាប់អតិថិជន' }
+            ];
+
+            const posterIdeas = [
+                { id: 1, title: '១. ពិធីបុណជាតិ ទិវាជាតិ', description: 'និងការចុះបញ្ជីបេតិកភណ្ឌជាតិ' },
+                { id: 2, title: '២. ផលិតផលលក់ដាច់ច្រើនបំផុត', description: 'សម្ភារៈលក់ដាច់ច្រើនបំផុតនៅវីនសូ' },
+                { id: 3, title: '៣. Cute Collection', description: 'បង្ហាញពីផលិតផលតម្លៃត្រឹម 1.1$ (៤-៥មុខ), ថតសម្ភារៈ cute' },
+                { id: 4, title: '៤. Back to school', description: 'ថតសម្ភារៈសិក្សាជាឈុតសម្រាប់សិស្ស' },
+                { id: 5, title: '៥. Album new stock arrived', description: 'បង្ហាញពីទំនិញថ្មីៗ' },
+                { id: 6, title: '៦. សម្ភារៈជាឈុតពីវីនសូ', description: 'បង្ហាញពីឈុតសម្អាតផ្ទះ ឈុតតុបតែងបន្ទប់/ការិយាល័យ ឈុតសម្រាប់អ្នកសិក្សា' },
+                { id: 7, title: '៧. របៀបកម្មង់ទំនិញពីវីនសូ តាមអនឡាញ', description: 'បង្ហាញពីភាពងាយស្រួលសម្រាប់អតិថិជន' },
+                { id: 8, title: '៨. Spend little, get many things! Everything 1.1$', description: 'បង្ហាញពីចំណាយលុយតិច ចំណេញច្រើន គ្រប់យ៉ាងត្រឹមតែ 1.1$' },
+                { id: 9, title: '៩. Happy Shopping', description: 'ថតភ្ញៀវពេលមកទិញអីវ៉ាន់នៅវីនសូ' },
+                { id: 10, title: '១០. អត្ថប្រយោជន៍ដែលគួរជ្រើសរើសរើសផ្សារវីនសូ', description: 'បង្ហាញពីសារៈប្រយោជន៍ផ្សេងៗ (តម្លៃថោក សម្បូរបែប ធូរថ្លៃ)' },
+                { id: 11, title: '១១. Review សម្ភារៈលេងសម្រាប់កុមារ', description: 'ពិនិត្យសម្ភារៈក្មេងលេង' },
+                { id: 12, title: '១២. Review សម្ភារៈផ្ទះបាយ និងក្នុងបន្ទប់', description: 'ពិនិត្យសម្ភារៈប្រើប្រាស់ក្នុងផ្ទះ' },
+                { id: 13, title: '១៣. ចង់សន្សំលុយលើការទិញទំនិញ', description: 'បង្ហាញពីតម្លៃសមរម្យ' },
+                { id: 14, title: '១៤. Giveaway Top Fan', description: 'Like, share and follow ដើម្បីទទួលបានរង្វាន់' },
+                { id: 15, title: '១៥. ពាក្យលើកទឹកចិត្តប្រចាំសប្តាហ៍', description: 'ពាក្យលើកទឹកចិត្តប្រចាំសប្តាហ៍' },
+                { id: 16, title: '១៦. អបអរពិធីបុណ្យអុំទូក!', description: 'បង្ហាញពីសម្ភារៈសម្រាប់ដើរលេង ឬតុបតែងផ្ទះ' },
+                { id: 17, title: '១៧. សម្ភារៈរៀបចំផ្ទះ (Home Organization)', description: 'ផ្តោតលើប្រអប់ ធ្នើរ និងសម្ភារៈរៀបចំផ្ទះបាយ/បន្ទប់គេង' },
+                { id: 18, title: '១៨. សម្ភារៈជាង', description: 'ថតរូបសម្ភារៈជាង' },
+                { id: 19, title: '១៩. ទំនិញថ្មី! រៀងរាល់សប្តាហ៍', description: 'បង្កើតការរំភើបដោយប្រកាសថាមានទំនិញថ្មីៗចូលស្តុក' }
+            ];
+
+            // --- Tab Navigation ---
+            const tabs = document.querySelectorAll('.tab');
+            const panes = document.querySelectorAll('.content-pane');
+            let kpiChart = null;
+
+            function showTab(tabId) {
+                panes.forEach(pane => {
+                    pane.classList.add('hidden');
+                });
+                tabs.forEach(tab => {
+                    tab.classList.remove('tab-active');
+                });
+
+                document.getElementById(tabId + '-content').classList.remove('hidden');
+                document.getElementById('tab-' + tabId).classList.add('tab-active');
+
+                if (tabId === 'kpi' && !kpiChart) {
+                    renderKPIChart();
+                }
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.id.replace('tab-', '');
+                    showTab(tabId);
+                });
+            });
+
+            // --- Chart.js Rendering ---
+            function renderKPIChart() {
+                const ctx = document.getElementById('kpiChart').getContext('2d');
+                kpiChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: kpiData.labels,
+                        datasets: [{
+                            label: 'ចំនួនគោលដៅ',
+                            data: kpiData.data,
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.8)', // Blue
+                                'rgba(239, 68, 68, 0.8)', // Red
+                                'rgba(16, 185, 129, 0.8)'  // Green
+                            ],
+                            borderColor: [
+                                'rgba(59, 130, 246, 1)',
+                                'rgba(239, 68, 68, 1)',
+                                'rgba(16, 185, 129, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed + '+';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // --- List Population & Filtering ---
+            const videoList = document.getElementById('video-list');
+            const posterList = document.getElementById('poster-list');
+            const videoSearch = document.getElementById('video-search');
+            const posterSearch = document.getElementById('poster-search');
+
+            function createIdeaCard(item) {
+                return `
+                    <div class="idea-card bg-white p-4 rounded-lg shadow border border-neutral-200" data-title="${item.title.toLowerCase()} ${item.description.toLowerCase()}">
+                        <h4 class="font-bold text-red-700">${item.title}</h4>
+                        <p class="text-sm text-neutral-600">${item.description}</p>
+                    </div>
+                `;
+            }
+
+            function populateList(listElement, items) {
+                listElement.innerHTML = items.map(createIdeaCard).join('');
+            }
+
+            function filterList(searchTerm, listElement) {
+                const cards = listElement.getElementsByClassName('idea-card');
+                const term = searchTerm.toLowerCase();
+
+                for (let card of cards) {
+                    const text = card.dataset.title;
+                    if (text.includes(term)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            }
+
+            videoSearch.addEventListener('input', (e) => {
+                filterList(e.target.value, videoList);
+            });
+
+            posterSearch.addEventListener('input', (e) => {
+                filterList(e.target.value, posterList);
+            });
+
+            // --- Initial Load ---
+            populateList(videoList, videoIdeas);
+            populateList(posterList, posterIdeas);
+            showTab('kpi'); // Show KPI tab by default
+        });
+    </script>
+</body>
+</html>
